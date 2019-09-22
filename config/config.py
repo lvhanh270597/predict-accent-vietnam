@@ -1,0 +1,15 @@
+BASE_PATH = './'
+DATA_ROOT = './data'
+MODEL_EXT = ".sav"
+DICTIONARY_PATH = "./data/Viet74K.txt"
+TRAIN_DATA = './data/train.txt'
+TEST_DATA = './data/test.txt'
+LOG_PATH = "./logs/errors"
+ACC_PATH = './logs/access'
+WORD_PATH = './data/config_tone.json'
+WINDOW_SIZE = 5
+MAX_WORDS = 5
+MAX_LETTERS = 4
+HASH_BASE = 1000000
+DEFAULT = ['__begin__', '__end__',  '__object__', '__phone__', '__num__', '__name__', '__url__', '__email__', '__date__']
+SPECIAL = ["."]
