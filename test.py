@@ -1,52 +1,40 @@
-# from algorithms.machine_learning import GuessSentence
+
+
+
+# from models.machine_learning import MachineLearner
+# learner = MachineLearner()
+# data, models = learner.build()
+# learner.test(data, models)
+#
+# from data_structures.sentence import  Sentence
+# sentence = Sentence('1 năm bản quyền miễn phí phần mềm bảo mật hàng đầu - Thủ thuật - Dân trí Báo điện tử của báo khuyến học & Dân Trí Giao diện PDA Mua chung Blog Tấm lòng nhân ái Tuần báo Mua bán Bé xinh Diễn đàn dân trí English Sự kiện Xã hội Thế giới Thể thao Giáo dục Nhân ái Kinh doanh Văn hóa Pháp luật Nhịp sống trẻ Tình yêu Sức khỏe Sức mạnh số Ô tô - Xe máy Chuyện lạ Bạn đọc Vi tính Điện thoại Thủ thuật "Bom tấn" tại hội nghị di động thế giới MWC 2012 Tranh chấp bản quyền thương hiệu iPad tại Trung Quốc Triển lãm CES 2012 CEO Facebook đến Việt Nam Thứ Bẩy, 25/02/2012 - 15:47 1 năm bản quyền miễn phí phần mềm bảo mật hàng đầu (Dân trí) - Bài viết dưới đây sẽ giúp bạn tận dụng cơ hội để sở hữu bản quyền của Trend Micro Titanium 2012, một trong những phần mềm bảo mật mạnh mẽ nhất hiện nay, với hạn dùng lên đến tận 1 năm.')
+# sentence.set_vocab(["tấm lòng"])
+# print(sentence.detect_name())
+#
+# print(sentence.restore())
+# from underthesea import sent_tokenize
+# f = open("./data/raw/VNESEcorpus.txt")
+# data = f.read()
+# f.close()
+#
+# data = sent_tokenize(data)
+#
+# f = open("./data/raw/sentences.txt", "w")
+# for line in data:
+#     f.write("%s\n" % line)
+# f.close()
+# from data_structures.sentence import Sentence
+# from helpers import file as fman
 # from nltk.tokenize import word_tokenize
+# data = fman.load_text("./data/Viet74K.txt")
+# instance = Sentence()
+# vocab = set()
+# for word in data:
+#     for item in word_tokenize(word):
+#         if item.isalpha():
+#             item = item.lower()
+#             instance.set_sentence(item)
+#             item = instance.remove_accents()
+#             vocab.add(item)
 #
-# query = "co le pham chat kho ren luyen nhat ma cung la mau chot de quyet dinh thanh bai do la su kien tri"
-# list_inputs = list(set(word_tokenize(query)))
-# guesser = GuessSentence()#datadir=None, list_words=list_inputs)
-# guesser.learning()#list_inputs)
-# guesser.score(None, "./results/scores.txt")
-#
-# result = guesser.guess(query)
-# print(result)
-#
-# guesser.save_all("./data/models/") #_all("./data/models/")
-
-
-# from algorithms.machine_learning import GuessOne
-#
-# guesser = GuessOne("co", "./data/words/")
-# guesser.get_bow_vectors()
-# guesser.add_dict_feature()
-# guesser.train_test_split()
-# guesser.load()
-# print(guesser.guess("sao lai co the pham chat kho"))
-#
-# from controller.data import DataManager
-# from controller.model import Modeler
-#
-# manager = DataManager()
-#
-# modeler = Modeler(manager)
-#
-# while True:
-#     sentence = input("Enter your sentence: ")
-#     result = modeler.guess(sentence)
-#     print(result)
-
-# from kernel.kernel import Kernel
-#
-# kn = Kernel()
-# kn.add_document("thằng chó đẻ mặt lồn. đụ má mày!!! thằng lồn chó")
-# while True:
-#     sentence = input("Enter your sentence: ")
-#     result = kn.guess(sentence)
-#     print(result)
-
-
-
-
-
-
-
-
+# fman.save_text(vocab, "./data/listwords.txt")

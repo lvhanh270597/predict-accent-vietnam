@@ -3,6 +3,8 @@ import json
 import pickle
 from logs import log
 from helpers import string as sman
+import shutil
+from data_structures.vocabulary import Vocabulary
 
 functions = {
     'enterdel' : sman.enterdel,
@@ -30,9 +32,12 @@ def processing(self, description):
     return data
 
 def save_text(data, filename, type="w"):
+    print("Saving data at %s" % filename)
+    data = list(map(str, data))
     with open(filename, type) as f:
-        f.write("\n".join(data))
+        f.write("\n".join(data) + "\n")
     f.close()
+    print("Saved!")
 
 def save_data_point(data, filename, type="w"):
     with open(filename, type) as f:
@@ -61,12 +66,18 @@ def check_folder(folder_path):
         return False
     return True
 
-def load_text(fname):
+def load_text(fname, enterdel=True):
     data = []
     if check_file(fname):
         with open(fname, "r") as myfile:
             data = myfile.readlines()
+    for i, sentence in enumerate(data):
+        data[i] = sentence.replace("\n", "")
     return data
+
+def load_text2dict(fname, delimiter="\t"):
+    data = load_text(fname)
+    return sman.convert_text2dict(data, delimiter)
 
 def load_json(fpath):
     data = []
@@ -76,7 +87,7 @@ def load_json(fpath):
     return data
 
 def save_json(data, fpath):
-    with open(fpath) as myfile:
+    with open(fpath, "w") as myfile:
         json.dump(data, myfile)
 
 def get_filename_ext(filename):
@@ -90,11 +101,68 @@ def load_object(filename):
     return pickle.load(open(filename, 'rb'))
 
 def make_dir(folder_path):
-    os.mkdir(folder_path)
+    print("Making dir %s" % folder_path)
+    if not os.path.isdir(folder_path):
+        os.mkdir(folder_path)
 
 def join_path(start, list_items):
     if type(list_items) == str:
         list_items = [list_items]
     add = "/%s" % "/".join(list_items)
     return start + add
+
+def load_folder(fullpath):
+    data = dict()
+    for filename in os.listdir(fullpath):
+        realpath = join_path(fullpath, filename)
+        cur_data = load_text(realpath)
+        name, ext = get_filename_ext(filename)
+        data[name] = cur_data
+    return data
+
+def load_objects_on_folder(fullpath, accept_ext=["*"]):
+    data = dict()
+    for filename in os.listdir(fullpath):
+        realpath = join_path(fullpath, filename)
+        name, ext = get_filename_ext(filename)
+        if (ext in accept_ext) or ("*" in accept_ext):
+            cur_data = load_object(realpath)
+            data[name] = cur_data
+    return data
+
+def load_json_folder(fullpath):
+    data = dict()
+    for filename in os.listdir(fullpath):
+        realpath = join_path(fullpath, filename)
+        cur_data = load_json(realpath)
+        name, ext = get_filename_ext(filename)
+        data[name] = cur_data
+    return data
+
+def load_data_words(fulldir):
+    data = dict()
+    for word_name in os.listdir(fulldir):
+        cur_path = join_path(fulldir, word_name)
+        cur_data = dict()
+        for filename in os.listdir(cur_path):
+            realpath = join_path(cur_path, filename)
+            name, ext = get_filename_ext(filename)
+            cur_data[name] = load_text(realpath)
+        data[word_name] = cur_data
+    return data
+
+def remove_folder(folder):
+    shutil.rmtree(folder)
+
+def load_vocabulary(folder):
+    vocabularies = dict()
+    ext = Vocabulary.EXT_NAME
+    for filename in os.listdir(folder):
+        name, ext = get_filename_ext(filename)
+        vocabulary = Vocabulary()
+        vocabulary.load(folder, name)
+        vocabularies[name] = vocabulary
+    return vocabularies
+
+
 

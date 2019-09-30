@@ -2,6 +2,7 @@ import os.path
 import json
 from nltk.tokenize import sent_tokenize
 from data_structures.sentence import Sentence
+from data_structures.vocabulary import Vocabulary
 from logs.log import *
 from helpers import string
 from config import config
@@ -20,22 +21,28 @@ def save(self, save_as):
     for key in save_as:
         with open(save_as[key], "w") as f:
             f.write("\n".join(self._data[key]))
-def separate_data(self, ratio=0.7):
-    train_size = int(ratio * self.nsize)
-    self.train = self.data[:train_size]
-    self.test = self.data[train_size:]
-    with open(TRAIN_DATA, "w") as myfile:
-        myfile.write("\n".join(self.train))
-    with open(TEST_DATA, "w") as myfile:
-        myfile.write("\n".join(self.test))
 
-def get_item_indices(key, indices, default=None):
+def item_indices(key, indices, default=None):
     if key not in indices:
         return default
     return indices[key]
 
+def get_bow_vectors(list_sentences, ngrams, vocab):
+    vectors = []
+    sentence_ins = Sentence()
+    for sentence in list_sentences:
+        vector = [0] * (vocab.length() + 1)
+        sentence_ins.set_sentence(sentence)
+        for n in ngrams:
+            ngrams_features = sentence_ins.extract_n_gram(n)
+            indices = vocab.get_vector_indices_by_list(ngrams_features)
+            for index in indices:
+                vector[index] = 1
+        vectors.append(vector)
+    return vectors
+
 def get_window_item(sentence, window_size):
-    noa_sentence = Sentence().remove_accents(sentence)
+    noa_sentence = Sentence(sentence).remove_accents()
     noa_words = noa_sentence.split()
     words = sentence.split()
 
@@ -51,18 +58,22 @@ def get_window_item(sentence, window_size):
 
     return vectors
 
-def create_window_items(data, window_size):
+def create_window_items(data, window_size, only_lower=True):
     res = dict()
-    # self.X = []
-    # self.y = []
     cur, cnt = 1, len(data)
     for sentence in data:
         print("Processing at %d/%d %.2f%%" % (cur, cnt, (cur / cnt) * 100))
         vectors = get_window_item(sentence, window_size)
         for X, label, rlabel in vectors:
-            if label not in res:
-                res[label] = []
-            res[label].append(tuple([X, rlabel]))
+            if only_lower:
+                if label.isalpha() and label.islower():
+                    if label not in res:
+                        res[label] = []
+                    res[label].append(tuple([X, rlabel]))
+            else:
+                if label not in res:
+                    res[label] = []
+                res[label].append(tuple([X, rlabel]))
         cur += 1
     return res
 
@@ -112,3 +123,37 @@ def load_json_files(self, list_fnames):
 def separate_sentence(document):
     sentences = sent_tokenize(document)
     return sentences
+
+def get_vocabulary(sentences, ngrams, startIndex=1, init=[]):
+    vocabulary = Vocabulary(startIndex)
+    vocabulary.add_list(init)
+
+    sentence_ins = Sentence()
+    for sentence in sentences:
+        sentence_ins.set_sentence(sentence)
+        for n in ngrams:
+            vocabulary.add_list(sentence_ins.extract_n_gram(n))
+
+    return vocabulary
+
+def get_dict_feature(sentence, refer, max_words):
+    words = sentence.split()
+    half = len(words) // 2
+    vector = []
+    for nsize in range(max_words, 0, -1):
+        for i in range(0, len(words) - nsize + 1):
+            last_index = i + nsize - 1
+            if (i <= half) and (last_index >= half):
+                cur_word = ' '.join(words[i: last_index + 1])
+                item = 1 if cur_word in refer else 0
+                vector.append(item)
+    return vector
+
+def separate_part(data, n_part):
+    data_parts = []
+    for i in range(n_part):
+        data_parts.append([])
+    for item in data:
+        for i in range(n_part):
+            data_parts[i].append(item[i])
+    return data_parts

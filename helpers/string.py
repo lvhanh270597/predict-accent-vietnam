@@ -24,8 +24,10 @@ def get_hash_ngram(_list, n, max_v):
 
 def enterdel(string):
     return string.replace("\n", "")
+
 def lower(string):
     return string.lower()
+
 def get_unique_words(list_of_sentences):
     words = set()
     for sentence in list_of_sentences:
@@ -47,3 +49,17 @@ def get_current_time():
     now = datetime.now()  # current date and time
     date_time = now.strftime("%m-%d-%Y_%H-%M-%S")
     return date_time
+
+def convert_dict2text(_dict, delimier):
+    encoded = []
+    for word, value in _dict.items():
+        text = "%s%s%s" % (word, delimier, value)
+        encoded.append(text)
+    return encoded
+
+def convert_text2dict(list_lines, delimiter="\t"):
+    result = dict()
+    for line in list_lines:
+        key, value = line.split(delimiter)
+        result[key] = value
+    return result

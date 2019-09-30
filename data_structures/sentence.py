@@ -1,126 +1,209 @@
+from pyvi import ViTokenizer
 import re
-from config import config
-from nltk.tokenize import word_tokenize
+
 class Sentence:
     s1 = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
     s0 = u'AAAAEEEIIOOOOUUYaaaaeeeiioooouuyAaDdIiUuOoUuAaAaAaAaAaAaAaAaAaAaAaAaEeEeEeEeEeEeEeEeIiIiOoOoOoOoOoOoOoOoOoOoOoOoUuUuUuUuUuUuUuYyYyYyYy'
     u = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĂĐĨŨƠƯẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼẾỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸ'
+    l = u'àáâãèéêìíòóôõùúýăđĩũơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ'
     B_C = '__begin__'
     E_C = '__end__'
-    S_C = '\t'
-    R_S = '__object__'
+    NAME_REGREX = re.compile(r'[' + u + r'A-Z]+[' + l + 'a-z]+,?\s+(?:[' + u + r'A-Z][' + l + 'a-z]*\s*)*[' + u + r'A-Z][' + l + 'a-z]+', re.UNICODE)
+    NUM_REGREX  = re.compile(r'[-+]?[.]?[\d]+(?:,\d\d\d)*[\.\,]?\d*(?:[eE][-+]?\d+)?', re.UNICODE)
     replacements = {
-        'phone': {
-            'regrex': [re.compile(r'[\+\(]?[1-9][0-9 .\-\(\)]{8,}[0-9]', re.UNICODE)],
-            'replace': '__phone__'
-        },
-        'number': {
-            'regrex': [re.compile(r'[-+]?[.]?[\d]+(?:,\d\d\d)*[\.\,]?\d*(?:[eE][-+]?\d+)?', re.UNICODE)],
-            'replace': '__num__'
-        },
-        'email': {
-            'regrex': [re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}', re.UNICODE)],
-            'replace': '__email__'
-        },
-        'name': {
-            'regrex': [
-                re.compile(r'[' + u + r'A-Z]+[\w]+,?\s+(?:[' + u + r'A-Z][\w]*\s*)*[' + u + r'A-Z][\w]+', re.UNICODE),
-                re.compile(r'[' + u + r'A-Z]{3,5}', re.UNICODE)],
-            'replace': '__name__'
-        },
-        'date': {
-            'regrex': [re.compile(r"[\d]{1,2}/[\d]{1,2}(/[\d]{2,4})?", re.UNICODE),
-                       re.compile(r"[\d]{1,2}-[\d]{1,2}(-[\d]{2,4})?", re.UNICODE)],
-            'replace': '__date__'
-        }
+        "name"  : "__name__",
+        "num"   : "__num__",
+        "other" : "__other__"
     }
-    replace_items = ['__phone__', '__num__', '__name__', '__url__', '__email__', '__date__']
+    punkts = {",", ".", '"', "'", ":", "!", "?", "..."}
 
-    def __init__(self, sentence=''):
-        self.sentence = sentence
-        self.word_cnt = sentence.split()
+    def __init__(self, sentence='', list_names=[], vocab=[]):
+        self.set_sentence(sentence)
+        self.set_list_name(list_names)
+        self.set_vocab(vocab)
+        self.replace = self.replacements
+        self.results = dict()
+        self.functions = {
+            "tokenize"  : self.tokenize,
+            "name"      : self.detect_name,
+            "num"       : self.detect_num,
+            "other"     : self.detect_other,
+            "lower"     : self.lower
+        }
+
+    def beautify(self, list_functions=["tokenize", "name", "other", "num", "lower"]):
+        self.results = dict()
+        for item in list_functions:
+            if item in self.functions:
+                self.functions[item]()
+        return self.sentence
+
+    def get_extracted_names(self):
+        if "name" in self.results:
+            return self.results["name"].values()
+        return []
+
     def lower(self):
         self.sentence = self.sentence.lower()
-    def tokenize(self):
-        return ' '.join(word_tokenize(self.sentence))
-    def extract(self, typeName):
-        if typeName not in self.replacements: return []
-        regrexes = self.replacements[typeName]['regrex']
-        lst = []
-        s = self.sentence
-        for regrex in regrexes:
-            lst.extend(re.findall(regrex, s))
-            s = re.sub(regrex, '', s)
-        return [(typeName, lst)]
-    def extract_continue(self, lst=['email', 'phone', 'number', 'name', 'date']):
-        res = []
-        s = self.sentence
-        for typeName in lst:
-            res.extend(self.extract(typeName))
-            self.sentence = self.remove(typeName, '')
-        self.sentence = s
-        return res
-    def revert(self):
-        lst = self.extract_continue()
-        self.remove_continue()
-        words = word_tokenize(self.sentence)
-        for item in lst:
-            key = item[0]
-            values = item[1]
-            replace_item = self.replacements[key]['replace']
-            indices = [i for i, x in enumerate(words) if x == replace_item]
-            for i in range(len(indices)):
-                words[indices[i]] = values[i]
-        return words
 
-    def extract_n_gram(self, n, sentence, lower=True):
+    def set_sentence(self, sentence):
+        self.sentence = sentence
+        self.word_cnt = len(sentence.split())
+
+    def set_vocab(self, vocab):
+        self.vocab = set(vocab)
+
+    def set_replace(self, name, value):
+        self.replace[name] = value
+
+    def tokenize(self):
+        self.sentence = ViTokenizer.tokenize(self.sentence)
+        self.sentence = self.sentence.replace("_", " ")
+        return self.sentence
+
+    def extract_n_gram(self, n, style="str", delimiter=" "):
         lst = []
-        sentence = sentence.lower()
-        words = sentence.split()
+        words = self.sentence.split()
         word_size = len(words)
         for i in range(word_size - n + 1):
-            lst.append(tuple(words[i: i + n]))
+            item = tuple(words[i: i + n]) if style == "tuple" else delimiter.join(words[i: i + n])
+            lst.append(item)
         return lst
 
-    def remove(self, typeName, replace=False):
-        if typeName not in self.replacements:
-            return self.sentence
-        s = self.sentence
-        regrexes = self.replacements[typeName]['regrex']
-        if replace == False:
-            replace = self.replacements[typeName]['replace']
-        for regrex in regrexes:
-            s = re.sub(regrex, replace, ' ' + s + ' ')
-        return s
+    def remove_accents(self):
+        input_str = self.sentence
+        string = ''
+        for char in input_str:
+            char = char if char not in self.s1 else self.s0[self.s1.index(char)]
+            string += char
+        return string
 
-    def remove_no_replace(self, lst=['phone', 'number', 'measure', 'interval', 'date']):
-        for typeName in lst:
-            self.sentence = self.remove(typeName)
-        return self.sentence
+    def set_list_name(self, list_names):
+        self.list_names = set(list_names[:])
 
-    def remove_continue(self, lst=['email', 'phone', 'number', 'name', 'date']):
-        for typeName in lst:
-            self.sentence = self.remove(typeName)
-        for item in self.replace_items:
-            self.sentence = re.sub(r'([^\s]+)(' + item + ')([^\s]*)', self.R_S + ' ', self.sentence)
-        self.sentence = self.sentence.strip()
-        for special in config.SPECIAL:
-            self.sentence = self.sentence.replace(special, "")
-        self.word_cnt = len(self.sentence.split())
-        return self.sentence
-    def check_object(self, word):
-        return word.startswith('__') and word.endswith('__')
+    def is_title(self, word):
+        if len(word) >= 1:
+            return word[0].isupper()
+        return False
 
-    def remove_no_vietnamese(self, word):
-        return re.sub(r'(\d+)|([wjfz]+)', '', word)
+    def detect_name(self):
+        """
+        :param set_name:
+        :return: list of names detected
+        """
+        results = dict()
+        self.words = self.sentence.split()
 
-    def check_has_accent(self, input_str):
-        return (input_str != self.remove_accents(input_str))
-    def remove_accents(self, input_str):
-        s = ''
-        for c in input_str:
-            if c in self.s1:
-                s += self.s0[self.s1.index(c)]
+        # Two or more two words are title, this also always a name
+        word_cnt, start = len(self.words), 0
+        index_leng = [0] * word_cnt
+        check = [False] * word_cnt
+        while (start < word_cnt):
+            if (not check[start]) and (self.is_title(self.words[start])) and (not self.words[start].isupper()):
+                check[start] = True
+                end = min(word_cnt, start + 1)
+                while (end < word_cnt) and (self.is_title(self.words[end])):
+                    check[end] = True
+                    end += 1
+                if end < word_cnt:
+                    end -= 1
+                    while (end >= start) and (self.next_word_in_vocab(end, [2, 3, 4])):
+                        end -= 1
+                if end - start + 1 >= 2:
+                    index_leng[start] = end - start + 1
+                start = end
+            else: start += 1
+        # All letters are upper, this always a name
+        for i, word in enumerate(self.words):
+            if (len(word) > 1) and (not check[i]) and word.isalpha() and word.isupper():
+                results[i] = word
+                index_leng[i] = 1
+        # Check first word
+        if self.check_first_word():
+            index_leng[0] = 1
+
+        # Get data
+        new_words = []
+        start = 0
+        while (start < word_cnt):
+            if index_leng[start] > 0:
+                next_index = start + index_leng[start]
+                current_word = " ".join(self.words[start: next_index])
+                new_words.append(current_word)
+                results[start] = current_word
+                new_words[-1] = self.replace["name"]
+                start = next_index
             else:
-                s += c
-        return s
+                new_words.append(self.words[start])
+                start = start + 1
+        del self.words
+        # for i, word in enumerate(self.words):
+        #     print("%s : %d" % (word, index_leng[i]), end=",")
+        self.words = new_words
+        self.sentence = ' '.join(self.words)
+        self.results["name"] = results
+        return (self.sentence, results)
+
+    def check_first_word(self):
+        word_cnt = len(self.words)
+        if word_cnt > 0:
+            first_word = self.words[0]
+            if first_word[0].isupper():
+                if word_cnt > 1:
+                    if self.next_word_in_vocab(0, [2, 3, 4]):
+                        return False
+            if first_word in self.list_names:
+                return True
+        return False
+
+    def next_word_in_vocab(self, start, list_check):
+        for n in list_check:
+            next_n_words = self.get_next(start, n)
+            if next_n_words in self.vocab:
+                return True
+            next_n_words = next_n_words.lower()
+            if next_n_words in self.vocab:
+                return True
+        return False
+
+    def get_next(self, start, cnt):
+        word_cnt = len(self.words)
+        end = min(word_cnt, start + cnt)
+        return " ".join(self.words[start : end])
+
+    def restore(self):
+        results = dict()
+        for _, value in self.results.items():
+            results.update(value)
+
+        for i, word in enumerate(self.words):
+            if i in results:
+                self.words[i] = results[i]
+        self.sentence = ' '.join(self.words)
+        return self.sentence
+
+    def detect_num(self):
+        results = dict()
+        current_nums = re.findall(self.NUM_REGREX, self.sentence)
+        self.sentence = re.sub(self.NUM_REGREX, self.replace['num'], self.sentence)
+        self.words = self.sentence.split()
+        cnt = 0
+        for i, word in enumerate(self.words):
+            if word == self.replace['num']:
+                results[i] = current_nums[cnt]
+                cnt += 1
+        self.sentence = " ".join(self.words)
+        self.results["num"] = results
+        return (self.sentence, results)
+
+    def detect_other(self):
+        results = dict()
+        for i, word in enumerate(self.words):
+            if (not word.isalpha()) and (not word.isnumeric()) and (word not in self.replacements.values()):
+                if word not in self.punkts:
+                    results[i] = self.words[i]
+                    self.words[i] = self.replace["other"]
+        self.sentence = " ".join(self.words)
+        self.results["other"] = results
+        return self.sentence
+
