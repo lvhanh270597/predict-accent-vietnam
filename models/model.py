@@ -6,7 +6,6 @@ class Model:
 
     def __init__(self, name="Undefined", writeLog=True):
         self.name = name
-        self.verbose = verbose
         self.writeLog = writeLog
         if self.writeLog:
             self.log = Log(self.name)
@@ -14,5 +13,4 @@ class Model:
 
     def __del__(self):
         if self.writeLog:
-            self.log = Log(self.name)
             self.log.write("End %s!" % self.name)
