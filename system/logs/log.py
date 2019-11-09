@@ -16,7 +16,7 @@ class Log:
             else:
                 print ("Successfully created the directory %s" % path)
         
-        filename = self.config["log_name"] % ("%s.%s" % (self.name, self.config["log_ext"])))
+        filename = self.config["log_name"] % ("%s.%s" % (self.name, self.config["log_ext"]))
         fullpath = os.path.join(path, filename)
         if not os.path.exists(fullpath):
             with open(fullpath, 'w'): pass

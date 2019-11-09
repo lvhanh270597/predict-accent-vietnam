@@ -10,7 +10,7 @@ config["database"] = {
 }
 
 config["log"] = {
-    "log_path"  : "./log",
+    "log_path"  : "/tmp/log",
     "log_name"  : "%s",
     "log_format": "%s: %s",
     "log_ext"   : "log"
