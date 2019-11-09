@@ -1,7 +1,6 @@
 import os.path, json
 from nltk.tokenize import sent_tokenize
 from system.data_structures.sentence import Sentence
-from system.data_structures.vocabulary import Vocabulary
 from system.helpers import string
 
 def set_filenames(self, filenames):
