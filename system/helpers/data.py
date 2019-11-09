@@ -9,6 +9,7 @@ from config import config
 
 def set_filenames(self, filenames):
     self.filenames = filenames
+
 def preprocessing(self, actions):
     for key in actions.keys():
         new_data = self._data[key]
