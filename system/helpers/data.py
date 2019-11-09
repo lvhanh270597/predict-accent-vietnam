@@ -1,11 +1,8 @@
-import os.path
-import json
+import os.path, json
 from nltk.tokenize import sent_tokenize
-from data_structures.sentence import Sentence
-from data_structures.vocabulary import Vocabulary
-from logs.log import *
-from helpers import string
-from config import config
+from system.data_structures.sentence import Sentence
+from system.data_structures.vocabulary import Vocabulary
+from system.helpers import string
 
 def set_filenames(self, filenames):
     self.filenames = filenames
