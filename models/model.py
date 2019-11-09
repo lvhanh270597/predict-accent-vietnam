@@ -14,5 +14,4 @@ class Model:
 
     def __del__(self):
         if self.writeLog:
-            self.log = Log(self.name)
             self.log.write("End %s!" % self.name)
