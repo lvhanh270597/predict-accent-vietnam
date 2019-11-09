@@ -9,6 +9,12 @@ config["database"] = {
     "dbname": "predict-vietnamese-accents"
 }
 
+config["log"] = {
+    "log_path"  : "./log",
+    "log_name"  : "%s",
+    "log_format": "%s: %s",
+    "log_ext"   : "log"
+}
 
 # # SET FOR ENVIRONMENT
 # ENV["STA"] = "DEV" # OR RELEASE
