@@ -1,5 +1,4 @@
-from data_structures.sentence import *
-from logs import log
+from system.data_structures.sentence import *
 import pickle, os
 from datetime import datetime
 

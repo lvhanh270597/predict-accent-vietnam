@@ -1,10 +1,5 @@
 
-from helpers import file as fman
-
 class Vocabulary:
-
-	EXT_NAME = ".vocab"
-	DELIMITER = "\t"
 
 	def __init__(self, data=[], start=1, thresmin=0.0, thresmax=1.0):
 		self.vocabulary = dict()
