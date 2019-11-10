@@ -14,6 +14,11 @@ class AccessDatabase:
         items = mycol.insert_many(data).inserted_ids
         print("Wrote %d/%d successfully!" % (len(items), len(data)))
 
+    def find_one(self, colName, condition={}, fields=None):
+        mycol = self.mydb[colName]
+        data = mycol.find_one(condition, fields)
+        return data
+
     def find(self, colName, condition={}, fields=None):
         mycol = self.mydb[colName]
         data = mycol.find(condition, fields)
@@ -22,31 +27,3 @@ class AccessDatabase:
     def test(self, colName):
         for item in self.find(colName):
             print(item)
-
-class PushData:
-    
-    def __init__(self, path):
-        self.path = path
-        self.datalines = open(path).readlines()
-        self.datalines = [
-            sen.replace("\n", "") 
-            for sen in self.datalines[-5:]
-        ]
-    
-    def writeRaw(self):
-        db = AccessDatabase()
-        for i, text in enumerate(self.datalines):
-            self.datalines[i] = {
-                "text" : text
-            }
-        db.write('raw', self.datalines)
-    
-    def test(self):
-        print(self.datalines[-5:])
-
-# def main():
-#     pusher = PushData("./data/VNTQcorpus-small")
-#     # pusher.test()
-#     pusher.writeRaw()
-
-# main()
