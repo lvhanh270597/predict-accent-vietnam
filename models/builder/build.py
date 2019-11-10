@@ -14,7 +14,7 @@ class Builder:
         self.config = config["model"]
 
     def preprocess(self):
-        self.raw_data = self.loader.ldata.data[:1000]
+        self.raw_data = self.loader.ldata.data
         self.preprocessor = Preprocessor()
         self.preprocessor.set_data(self.raw_data)
         self.sentences, self.names, self.set_names = self.preprocessor.run()
