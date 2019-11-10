@@ -17,13 +17,23 @@ class Preprocessor(Model):
         self.raw = raw
 
     def run(self):
-        list_names, sentences = set(), []
+        set_names, list_names, sentences = set(), [], []
         for sentence in self.raw:
             sentence, names = self.working_on(sentence)
             # Update sentence and list of names
+            set_names.update(names)
             sentences.append(sentence)
-            list_names.update(names)
-        return sentences, list_names
+            list_names.append(list(names))
+        return sentences, list_names, set_names
+
+    def run_for_test(self, sentence):
+        self.test = dict()
+        sentence, names = self.working_on(sentence)
+        # Update sentence and list of names
+        return sentence, names
+
+    def restore(self, sentence, names):
+        return Sentence().restore_sentence(sentence, names)
 
     def working_on(self, sentence):
         self.sentence_instance.set_sentence(sentence)

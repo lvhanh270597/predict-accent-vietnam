@@ -2,9 +2,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-import numpy as np
+from system.helpers import file as fman
 from system.helpers import data as dman
 from models.model import Model
+from os import path
+import numpy as np
+import pickle
 
 class VectorGenerator(Model):
 
@@ -42,8 +45,8 @@ class VectorGenerator(Model):
         
         return X
     
-    def get(self):
-        X = self.vectorizer.transform(self.sentences)
+    def run_for_test(self, sentences):
+        X = self.vectorizer.transform(sentences)
         X = X.toarray()
 
         features_vectors = self.feature_extraction()
@@ -56,6 +59,42 @@ class VectorGenerator(Model):
         
         return X
 
-    def save(self, filedir):
-        self.vocab.save(filedir, self.word)
+    def save_model(self, config):        
+        model_path = config["model_path"]
+        model_ext = config["model_ext"]
+        vector_config = config["save_vectors"]
+        model_path = path.join(model_path, vector_config["dir"])
+        model_path = path.join(model_path, self.name)
+        fman.make_dir(model_path)
+        if vector_config["scaler"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "scaler.%s" % model_ext)
+            fman.save_object(self.scaler, fullpath)
+        if vector_config["pca"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "pca.%s" % model_ext)
+            fman.save_object(self.pca, fullpath)
+        if vector_config["vectorizer"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "vector.%s" % model_ext)
+            fman.save_object(self.vectorizer, fullpath)
+    
+    def load_model(self, config):
+        model_path = config["model_path"]
+        model_ext = config["model_ext"]
+        vector_config = config["load_vectors"]
+        model_path = path.join(model_path, vector_config["dir"])
+        model_path = path.join(model_path, self.name)
+        if vector_config["scaler"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "scaler.%s" % model_ext)
+            self.scaler = fman.load_object(fullpath)
+        if vector_config["pca"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "pca.%s" % model_ext)
+            self.pca = fman.load_object(fullpath)
+        if vector_config["vectorizer"] is True:
+            filename = config["format"] % self.name
+            fullpath = path.join(model_path, "vector.%s" % model_ext)
+            self.vectorizer = fman.load_object(fullpath)
         

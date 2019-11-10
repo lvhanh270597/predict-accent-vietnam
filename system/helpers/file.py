@@ -1,9 +1,8 @@
+from system.helpers import string as sman
 import os.path
 import json
 import pickle
-from system.helpers import string as sman
 import shutil
-from system.data_structures.vocabulary import Vocabulary
 
 functions = {
     'enterdel' : sman.enterdel,

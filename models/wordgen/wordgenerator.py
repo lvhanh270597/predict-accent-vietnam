@@ -17,15 +17,13 @@ class WordGenerator(Model):
         self.in_list = set(in_list)
         self.check_in_list = len(self.in_list) > 0
         self.sentences = []
-        self.real_sentences = []
         self.onelabel = dict()
         self.sentence_instance = Sentence()
         self.result = dict()
 
-    def set_data(self, sentences, real_sentences=[]):
+    def set_data(self, sentences):
         """Data are only list of sentences"""
         self.sentences = sentences
-        self.real_sentences = real_sentences
 
     def run(self):
         data = dman.create_window_items(self.sentences, self.window_size)
@@ -46,6 +44,20 @@ class WordGenerator(Model):
             }
             self.result[word] = new_data
         return self.result, self.onelabel
+
+    def run_for_test(self, sentences):
+        data = dman.create_window_items(sentences, self.window_size)
+        result = dict()
+        for word, data in data.items():
+            sentences, labels = dman.separate_part(data, 2)
+            # Word with only one fix
+            new_data = {
+                "origin" : word, 
+                "sentences" : sentences,
+                "labels" : labels
+            }
+            result[word] = new_data
+        return result
 
     def save_words(self, db_instance):
         data = []

@@ -11,6 +11,6 @@ class Model:
             self.log = Log(self.name)
             self.log.write("Created a %s successully!" % self.name)
 
-    def __del__(self):
-        if self.writeLog:
-            self.log.write("End %s!" % self.name)
+    # def __del__(self):
+    #     if self.writeLog:
+    #         self.log.write("End %s!" % self.name)

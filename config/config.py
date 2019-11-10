@@ -16,6 +16,37 @@ config["log"] = {
     "log_ext"   : "log"
 }
 
+config["localdata"] = {
+    "data_path" : "./data/VNTQcorpus-small"
+}
+
+config["model"] = {
+    "model_path"    : "./data/models",
+    "model_ext"     : "mod",
+    "window_size"   : 5,
+    "format"    : "%s",
+    "save_vectors"  : {
+        "dir"       : "vectors",
+        "scaler"    : True,
+        "pca"       : True,
+        "vectorizer": True
+    },
+    "save_learners" : {
+        "dir"       : "learners",
+        "learner"   : True
+    },
+    "load_vectors"  : {
+        "dir"       : "vectors",
+        "scaler"    : True,
+        "pca"       : True,
+        "vectorizer": True
+    },
+    "load_learners" : {
+        "dir"       : "learners",
+        "learner"   : True
+    },
+}
+
 # # SET FOR ENVIRONMENT
 # ENV["STA"] = "DEV" # OR RELEASE
 

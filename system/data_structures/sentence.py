@@ -207,3 +207,9 @@ class Sentence:
         self.results["other"] = results
         return self.sentence
 
+    def restore_sentence(self, sentence, names):
+        words = sentence.split()
+        for i, word in enumerate(words):
+            if word == self.replacements["name"]:
+                words[i] = names[i]
+        return ' '.join(words)

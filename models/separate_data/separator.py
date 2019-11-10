@@ -3,13 +3,14 @@ from sklearn.model_selection import train_test_split
 
 class Separator(Model):
 
-    def __init__(self, name="separator", shuffle=True):
+    def __init__(self, name="separator", minimum=10, shuffle=True):
         super().__init__(name)
         self.ratio = {
             "train": 0.6,
             "dev": 0.2,
             "test": 0.2
         }
+        self.minimum = minimum
         self.shuffle = shuffle
         self.X, self.y = [], []
         self.results = dict()
@@ -34,4 +35,7 @@ class Separator(Model):
                 "train" : [X_train, y_train],
                 "test"  : [X_test, y_test]
             }
+        if len(self.y) <= self.minimum:
+            for key in self.results:
+                self.results[key] = [self.X[:], self.y[:]]
         return self.results
